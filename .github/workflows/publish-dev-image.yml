@@ -101,7 +101,7 @@ jobs:
       - name: "Adding image tag for GCP"
         if: ${{ github.ref_type == 'tag' && env.GCP_REG_TOKEN }}
         run: |
-          # echo "IMAGE_TAG_GCP=${{ inputs.gcp_registry_domain }}/${{ inputs.gcp_registry_image }}:${{ github.ref_name }}" >> $GITHUB_ENV
+          echo "IMAGE_TAG_GCP=${{ inputs.gcp_registry_domain }}/${{ inputs.gcp_registry_image }}:${{ github.ref_name }}" >> $GITHUB_ENV
           echo "IMAGE_TAG_GCP_LATEST=${{ inputs.gcp_registry_domain }}/${{ inputs.gcp_registry_image }}:latest" >> $GITHUB_ENV
           echo "TAG ADDED: ${{ github.ref_name }}"
 
