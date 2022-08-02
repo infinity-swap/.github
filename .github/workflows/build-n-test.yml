@@ -2,6 +2,10 @@ name: "Build and Test"
 on:
   workflow_call:
     inputs:
+      # Docker image to use for the test environment
+      container-image:
+        type: string
+        required: true
       # Tests script to launch integration (whatever) tests with DFX environment
       # If skipped tests would not be launched
       test-script:
@@ -50,7 +54,7 @@ jobs:
   assemble-and-test:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/infinity-swap/ic-dev-full:latest
+      image: ${{ inputs.container-image }}
       credentials:
         username: ${{ secrets.gh_login }}
         password: ${{ secrets.gh_token }}
