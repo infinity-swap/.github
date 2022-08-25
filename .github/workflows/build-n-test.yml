@@ -16,6 +16,9 @@ on:
       skip-test:
         type: boolean
         required: false
+      audit-allow-warnings:
+        type: boolean
+        required: false
       # Name of the github artfact to upload for reusing in next jobs
       # If not defined -> would skip artifact uploading
       output-artifact:
