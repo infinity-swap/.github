@@ -16,6 +16,7 @@ on:
       skip-test:
         type: boolean
         required: false
+      # Do not fail on audit warnings only of critical errors
       audit-allow-warnings:
         type: boolean
         required: false
@@ -125,6 +126,15 @@ jobs:
       #     override: true
       #     components: rustfmt, clippy
 
+      - id: audit
+        run: echo "::set-output name=w::$(if [ "${{ inputs.audit-allow-warnings }}" = "true" ]; then echo ""; else echo " -D warnings "; fi)"
+
+      - name: "Audit"
+        uses: actions-rs/cargo@v1
+        with:
+          command: audit
+          args: ${{ steps.audit.outputs.w }}
+          
       - name: "Checking code format"
         uses: actions-rs/cargo@v1
         with:
