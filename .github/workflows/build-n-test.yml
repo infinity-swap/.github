@@ -71,6 +71,13 @@ jobs:
           token: ${{ secrets.gh_token }}
           fetch-depth: ${{ inputs.git-fetch-depth }}
 
+      - name: Checking for a test tag
+        id: tag
+        run: |
+          TT=""
+          if [ "$GITHUB_REF_TYPE" = "tag" ] && [ "${GITHUB_REF_NAME%-test}" != "$GITHUB_REF_NAME" ]; then TT="true"; fi
+          echo "::set-output name=test::$TT"
+
       - name: Geting week number
         id: date
         run: echo "::set-output name=week::$(date +'%U')"
@@ -127,6 +134,7 @@ jobs:
       #     components: rustfmt, clippy
 
       - name: "Audit prepare config, adding ignores from file ./AUDIT_IGNORE if any"
+        if: ${{ ! steps.tag.outputs.test }}
         id: audit
         run: |
           AUDIT_IGNORE=$(cat AUDIT_IGNORE  2>/dev/null | grep RUSTSEC | awk '$0="--ignore "$0' ORS=" ")
@@ -134,19 +142,21 @@ jobs:
           echo "::set-output name=w::$(if [ "${{ inputs.audit-allow-warnings }}" = "true" ]; then echo ""; else echo " -D warnings "; fi)"
 
       - name: "Audit"
+        if: ${{ ! steps.tag.outputs.test }}
         uses: actions-rs/cargo@v1
         with:
           command: audit
           args: ${{ steps.audit.outputs.w }} ${{ steps.audit.outputs.ignore }}
           
       - name: "Checking code format"
+        if: ${{ ! steps.tag.outputs.test }}
         uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --all --check
 
       - name: "Checking code style"
-        if: ${{ ! inputs.rs-skip-clippy }} 
+        if: ${{ ! inputs.rs-skip-clippy && ! steps.tag.outputs.test}} 
         uses: actions-rs/cargo@v1
         with:
           command: clippy
@@ -164,7 +174,7 @@ jobs:
           ${{ inputs.artifact-pre-script }}
 
       - name: "Runing test script"
-        if: ${{ inputs.test-script && ! inputs.skip-test }}
+        if: ${{ inputs.test-script && ! inputs.skip-test && ! steps.tag.outputs.test }}
         run: ${{ inputs.test-script }}
 
       - name: "Preparing artifact files"
