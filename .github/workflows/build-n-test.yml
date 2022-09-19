@@ -150,17 +150,11 @@ jobs:
           
       - name: "Checking code format"
         if: ${{ ! steps.tag.outputs.test }}
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all --check
+        run: cargo fmt --all --check
 
       - name: "Checking code style"
         if: ${{ ! inputs.rs-skip-clippy && ! steps.tag.outputs.test}} 
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: --all-features --all-targets
+        run: cargo clippy --all-features --all-targets
 
       - name: "Current environment"
         run: |
