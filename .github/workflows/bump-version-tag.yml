@@ -1,4 +1,13 @@
 name: "Update cargo version/tag"
+# Workflow follows next logic:
+# - should be triggered only on pull to the main branch (not tag)
+# - require to have one Cargo.toml (workspace) with version definition
+# - compare cargo version with the latest git tag (assuming that git tag has "v" prefix )
+# - if they are equal -> do nothing
+# - if cargo version is a prefix of a git tag -> increase patch number in cargo and commit changes
+# - if versions does not match -> assuming Cargo.toml was modified -> create a git tag with cargo version
+#
+
 on:
   workflow_call:
     inputs:
