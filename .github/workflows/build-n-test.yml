@@ -114,6 +114,7 @@ jobs:
         if: ${{ ! inputs.disable-cache }}
         with:
           key: "${{ steps.cache.outputs.tag }}"
+          shared-key: ${{ github.repository }}
           cache-targets:  ${{ inputs.enable-target-cache }}
 
       # - name: Cargo target cache
