@@ -78,9 +78,9 @@ jobs:
           if [ "$GITHUB_REF_TYPE" = "tag" ] && [ "${GITHUB_REF_NAME%-test}" != "$GITHUB_REF_NAME" ]; then TT="true"; fi
           echo "::set-output name=test::$TT"
 
-      - name: Geting week number
-        id: date
-        run: echo "::set-output name=week::$(date +'%U')"
+      # - name: Geting week number
+      #   id: date
+      #   run: echo "::set-output name=week::$(date +'%U')"
       
       - name: Getting src cache tag
         id: cache
@@ -89,49 +89,46 @@ jobs:
         # run: echo "::set-output name=tag::$(if [ -z "$GITHUB_HEAD_REF" ]; then echo $GITHUB_REF_NAME; else echo $GITHUB_HEAD_REF; fi)"
         # run: echo "::set-output name=tag::$(git ls-files -s $GITHUB_WORKSPACE/neuro/*/src | git hash-object --stdin)"
 
-      - name: Cargo deps cache
-        if: ${{ ! inputs.disable-cache }}
-        uses: actions/cache@v3
-        with:
-          # hashFiles function does not work because of error "The template is not valid." but template is valid
-          # key: cargo-full-${{ github.ref_name }}-${{ hashFiles('**/Cargo.toml') }}
-          # Cache cargo dependencies only once per week for all branches 
-          key: cargo-deps-${{ steps.date.outputs.week }}
-          restore-keys: |
-            cargo-deps-
-
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            /usr/local/cargo/bin/
-            /usr/local/cargo/registry/index/
-            /usr/local/cargo/registry/cache/
-            /usr/local/cargo/git/db/
-
-      - name: Cargo target cache
-        if: ${{ inputs.enable-target-cache && ! inputs.disable-cache}}
-        uses: actions/cache@v3
-        with:
-          # Cache target once per week/branch
-          key: cargo-target-${{ steps.cache.outputs.tag }}-${{ steps.date.outputs.week }}
-          restore-keys: |
-            cargo-target-${{ steps.cache.outputs.tag }}-
-            cargo-target-main-
-            cargo-target-
-
-          path: |
-            ${{ github.workspace }}/target
-
-      # Guess it works only for root based single rust projects
-      # - name: "Setup"
-      #   uses: actions-rs/toolchain@v1
+      # - name: Cargo deps cache
+      #   if: ${{ ! inputs.disable-cache }}
+      #   uses: actions/cache@v3
       #   with:
-      #     profile: minimal
-      #     toolchain: ${{ matrix.rust }}
-      #     override: true
-      #     components: rustfmt, clippy
+      #     # hashFiles function does not work because of error "The template is not valid." but template is valid
+      #     # key: cargo-full-${{ github.ref_name }}-${{ hashFiles('**/Cargo.toml') }}
+      #     # Cache cargo dependencies only once per week for all branches 
+      #     key: cargo-deps-${{ steps.date.outputs.week }}
+      #     restore-keys: |
+      #       cargo-deps-
+
+      #     path: |
+      #       ~/.cargo/bin/
+      #       ~/.cargo/registry/index/
+      #       ~/.cargo/registry/cache/
+      #       ~/.cargo/git/db/
+      #       /usr/local/cargo/bin/
+      #       /usr/local/cargo/registry/index/
+      #       /usr/local/cargo/registry/cache/
+      #       /usr/local/cargo/git/db/
+
+      - uses: Swatinem/rust-cache@v2
+        if: ${{ ! inputs.disable-cache }}
+        with:
+          key: "${{ steps.cache.outputs.tag }}"
+          cache-targets:  ${{ inputs.enable-target-cache }}
+
+      # - name: Cargo target cache
+      #   if: ${{ inputs.enable-target-cache && ! inputs.disable-cache}}
+      #   uses: actions/cache@v3
+      #   with:
+      #     # Cache target once per week/branch
+      #     key: cargo-target-${{ steps.cache.outputs.tag }}-${{ steps.date.outputs.week }}
+      #     restore-keys: |
+      #       cargo-target-${{ steps.cache.outputs.tag }}-
+      #       cargo-target-main-
+      #       cargo-target-
+
+      #     path: |
+      #       ${{ github.workspace }}/target
 
       - name: "Audit prepare config, adding ignores from file ./AUDIT_IGNORE if any"
         if: ${{ ! steps.tag.outputs.test }}
@@ -167,7 +164,7 @@ jobs:
           mkdir  .artifact
           ${{ inputs.artifact-pre-script }}
 
-      - name: "Runing test script"
+      - name: "Running test script"
         if: ${{ inputs.test-script && ! inputs.skip-test && ! steps.tag.outputs.test }}
         run: ${{ inputs.test-script }}
 
