@@ -56,6 +56,9 @@ jobs:
           # expecting git tag like "v1.1.1-ab8d" and toml version like "1.1.1"
 
           echo "now=$V_TOML" >> $GITHUB_OUTPUT
+          
+          echo "Tag for this commit: $V_GIT"
+          echo "Cargo.toml version: $V_TOML"
 
           if beginswith $V_GIT "v$V_TOML" ; then
             echo "Toml version $V_TOML matches $V_GIT"
