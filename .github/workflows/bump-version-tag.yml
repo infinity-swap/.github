@@ -63,9 +63,9 @@ jobs:
           if beginswith $V_GIT "v$V_TOML" ; then
             echo "Toml version $V_TOML matches $V_GIT"
             if [ "$V_GIT" != "v$V_TOML" ]; then
-              echo "New version: $NEW_V"
               NEW_V=$(semver -p -i patch $V_TOML)
               echo "new=$NEW_V" >> $GITHUB_OUTPUT
+              echo "New version: $NEW_V"
             fi
           else
             echo "Toml version was changed manually"
