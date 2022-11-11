@@ -19,10 +19,6 @@ jobs:
   assemble:
     runs-on: ubuntu-latest
     steps:
-      - name: Geting week number
-        id: date
-        run: echo "::set-output name=week::$(date +'%U')"
-      
       - name: Checkout repository and submodules
         uses: actions/checkout@v3
         with:
@@ -33,22 +29,9 @@ jobs:
         with:
           toolchain: stable
       
-      - name: Cargo deps cache
-        uses: actions/cache@v3
+      - uses: Swatinem/rust-cache@v2
         with:
-          key: cargo-deps-${{ steps.date.outputs.week }}
-          restore-keys: |
-            cargo-deps-
-
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            /usr/local/cargo/bin/
-            /usr/local/cargo/registry/index/
-            /usr/local/cargo/registry/cache/
-            /usr/local/cargo/git/db/
+          save-if: false
 
       - name: "Current environment"
         run: |
@@ -105,7 +88,4 @@ jobs:
           echo -n "$INDEX_URI" > "bucket/$REPO_INDEX_FILE"
           ls -la bucket
           gsutil cp bucket/$REPO_INDEX_FILE "gs://$GC_BUCKET/$REPO_INDEX_FILE" 
-
-
-
 
