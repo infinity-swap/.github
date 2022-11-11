@@ -89,7 +89,7 @@ jobs:
         with:
           # Let it be auto generated. If there will be no issues - will remove it completely
           # key: "${{ env.CACHE_TAG }}"
-          # shared-key: ${{ github.repository }}
+          shared-key: ${{ github.repository }}
           cache-targets:  ${{ inputs.enable-target-cache }}
 
       - name: "Audit prepare config, adding ignores from file ./AUDIT_IGNORE if any"
