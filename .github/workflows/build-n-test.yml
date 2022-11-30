@@ -91,6 +91,7 @@ jobs:
           # key: "${{ env.CACHE_TAG }}"
           shared-key: ${{ github.repository }}
           cache-targets:  ${{ inputs.enable-target-cache }}
+          save-if: ${{ github.ref_type != 'tag' }}
 
       - name: "Audit prepare config, adding ignores from file ./AUDIT_IGNORE if any"
         if: ${{ ! steps.tag.outputs.test }}
