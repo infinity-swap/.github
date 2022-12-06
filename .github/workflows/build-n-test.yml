@@ -45,6 +45,10 @@ on:
       git-fetch-depth:
         type: string
         required: false
+      cargo-clippy-extra-args:
+        type: string
+        required: false
+        default: ''
     secrets:
       gh_token:
         required: true
@@ -114,7 +118,7 @@ jobs:
 
       - name: "Checking code style"
         if: ${{ ! inputs.rs-skip-clippy && ! steps.tag.outputs.test}} 
-        run: cargo clippy --all-features --all-targets
+        run: cargo clippy --all-features --all-targets ${{ inputs.cargo-clippy-extra-args }}
 
       - name: "Current environment"
         run: |
