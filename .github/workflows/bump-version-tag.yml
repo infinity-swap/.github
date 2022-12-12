@@ -1,12 +1,12 @@
 name: "Update cargo version/tag"
 # Workflow follows next logic:
-# - should be triggered only on pull to the main branch (not tag)
+# - should be triggered only on pull to the main(default) branch (not tag)
 # - require to have one Cargo.toml (workspace) with version definition
 # - compare cargo version with the latest git tag (assuming that git tag has "v" prefix )
 # - if they are equal -> do nothing
 # - if cargo version is a prefix of a git tag -> increase patch number in cargo and commit changes
 # - if versions does not match -> assuming Cargo.toml was modified -> create a git tag with cargo version
-#
+
 
 on:
   workflow_call:
@@ -20,10 +20,12 @@ on:
 
 jobs:
   bump-version-tag:
-    runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - run: |
+          sudo apt-get update
           sudo apt-get install -y node-semver
 
       - name: "Infer Cargo.toml"
@@ -73,13 +75,13 @@ jobs:
           fi
 
       - name: "Updating cargo version"
-        if: ${{ steps.version.outputs.new && github.ref_type == 'branch' && github.ref == 'refs/heads/main' }}
+        if: ${{ steps.version.outputs.new }}
         run: |
           TOML="${{ steps.toml.outputs.path }}"
           sed -i -E "s/version\s*=\s*\"${{ steps.version.outputs.now }}\"/version = \"${{ steps.version.outputs.new }}\"/" $TOML
 
       - name: Commit changes
-        if: ${{ steps.version.outputs.new && github.ref_type == 'branch' && github.ref == 'refs/heads/main' }}
+        if: ${{ steps.version.outputs.new }}
         uses: EndBug/add-and-commit@v9
         with:
           committer_name: GitHub Actions
@@ -89,7 +91,7 @@ jobs:
           add: '*.toml'
 
       - name: Bump tag only
-        if: ${{ steps.version.outputs.tag && github.ref_type == 'branch' && github.ref == 'refs/heads/main' }}
+        if: ${{ steps.version.outputs.tag }}
         uses: anothrNick/github-tag-action@1.36.0
         env:
           CUSTOM_TAG: ${{ steps.version.outputs.tag }}
