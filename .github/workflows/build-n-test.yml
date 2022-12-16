@@ -6,6 +6,10 @@ on:
       container-image:
         type: string
         required: true
+      # Init script that should be executed right after checkout.
+      init-script:
+        type: string
+        required: false
       # Tests script to launch integration (whatever) tests with DFX environment
       # If skipped tests would not be launched
       test-script:
@@ -74,6 +78,10 @@ jobs:
           submodules: recursive
           token: ${{ secrets.gh_token }}
           fetch-depth: ${{ inputs.git-fetch-depth }}
+
+      - name: "Init script"
+        if: ${{ inputs.init-script }}
+        run: ${{ inputs.init-script }}
 
       - name: Checking for a test tag
         id: tag
