@@ -2,10 +2,10 @@ name: "Build and Test"
 on:
   workflow_call:
     inputs:
-      # By default you should use "ubuntu-latest" unless you need to use custom GH runner
       runs-on:
         type: string
-        required: true
+        default: 'ubuntu-latest'
+        required: false
       # Docker image to use for the test environment
       container-image:
         type: string
