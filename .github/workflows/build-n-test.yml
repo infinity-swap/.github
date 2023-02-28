@@ -4,7 +4,7 @@ on:
     inputs:
       runs-on:
         type: string
-        default: 'ubuntu-latest'
+        default: "ubuntu-latest"
         required: false
       # Docker image to use for the test environment
       container-image:
@@ -56,7 +56,7 @@ on:
       cargo-clippy-extra-args:
         type: string
         required: false
-        default: ''
+        default: ""
     secrets:
       gh_token:
         required: true
@@ -102,7 +102,7 @@ jobs:
         if: ${{ ! inputs.disable-cache }}
         with:
           shared-key: ${{ github.repository }}
-          cache-targets:  ${{ inputs.enable-target-cache }}
+          cache-targets: ${{ inputs.enable-target-cache }}
           save-if: ${{ github.ref_type != 'tag' }}
 
       - name: "Audit prepare config, adding ignores from file ./AUDIT_IGNORE if any"
@@ -119,13 +119,13 @@ jobs:
         with:
           command: audit
           args: ${{ steps.audit.outputs.w }} ${{ steps.audit.outputs.ignore }}
-          
+
       - name: "Checking code format"
         if: ${{ ! steps.tag.outputs.test }}
         run: cargo fmt --all --check
 
       - name: "Checking code style"
-        if: ${{ ! inputs.rs-skip-clippy && ! steps.tag.outputs.test}} 
+        if: ${{ ! inputs.rs-skip-clippy && ! steps.tag.outputs.test}}
         run: cargo clippy --all-features --all-targets ${{ inputs.cargo-clippy-extra-args }}
 
       - name: "Current environment"
@@ -159,6 +159,6 @@ jobs:
           retention-days: 3
           name: ${{ inputs.output-artifact }}
           path: .artifact/*
-      
+
       - name: "Removing wasm modules from target if any"
         run: rm -f target/wasm32-unknown-unknown/release/*.wasm
