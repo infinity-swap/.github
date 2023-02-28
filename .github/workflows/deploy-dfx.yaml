@@ -1,0 +1,62 @@
+name: Deploy Canisters to the Internet Computer
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        type: string
+        default: "ubuntu-latest"
+        required: true
+      # Get the artifact from the previous job
+      input-artifact:
+        type: string
+        required: true
+      # Dockerimage to use for deployment
+      container-image:
+        type: string
+        required: true
+      # The script to run for deployment
+      deployment-script:
+        type: string
+        required: true
+      # script arguments
+      script-args:
+        type: string
+        required: false
+
+    secrets:
+      gh_token:
+        required: true
+      gh_login:
+        required: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  deploy:
+    runs-on: ${{ inputs.runs-on }}
+    container:
+      image: ${{ inputs.container-image }}
+      credentials:
+        username: ${{ secrets.gh_login }}
+        password: ${{ secrets.gh_token }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: "Download artifacts"
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.input-artifact }}
+          path: ./.artifact
+
+      - name: "List files from artifact"
+        run: ls -laR ./.artifact
+
+      - name: "Deploying canisters"
+        run: |
+          # Run deployment script
+          ./${{ inputs.deployment-script }} ${{ inputs.script-arg }}

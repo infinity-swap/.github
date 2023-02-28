@@ -28,7 +28,7 @@ on:
       audit-allow-warnings:
         type: boolean
         required: false
-      # Name of the github artfact to upload for reusing in next jobs
+      # Name of the github artifact to upload for reusing in next jobs
       # If not defined -> would skip artifact uploading
       output-artifact:
         type: string
