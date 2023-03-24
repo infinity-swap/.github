@@ -156,7 +156,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 1
           name: ${{ inputs.output-artifact }}
           path: .artifact/*
       
