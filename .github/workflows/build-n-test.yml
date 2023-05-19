@@ -110,8 +110,8 @@ jobs:
         id: audit
         run: |
           AUDIT_IGNORE=$(cat AUDIT_IGNORE  2>/dev/null | grep RUSTSEC | awk '$0="--ignore "$0' ORS=" ")
-          echo "::set-output name=ignore::$AUDIT_IGNORE"
-          echo "::set-output name=w::$(if [ "${{ inputs.audit-allow-warnings }}" = "true" ]; then echo ""; else echo " -D warnings "; fi)"
+          echo "ignore=$AUDIT_IGNORE" >> $GITHUB_OUTPUT
+          echo "w=$(if [ "${{ inputs.audit-allow-warnings }}" = "true" ]; then echo ""; else echo " -D warnings "; fi)" >> $GITHUB_OUTPUT
 
       - name: "Audit"
         if: ${{ ! steps.tag.outputs.test }}
