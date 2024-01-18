@@ -18,6 +18,9 @@ on:
       region:
         type: string
         required: false
+      list_urls:
+        type: boolean
+        default: true
 
     secrets:
       gcp_deploy_token:
@@ -45,7 +48,9 @@ jobs:
           suffix: run-${{ github.run_number }}
           image: ${{ inputs.image }}
 
+      # Require permission 'run.services.list' on resource 'namespaces/PROJECT_ID/services'
       - name: "Services URLs"
+        if: ${{ inputs.list_urls }}
         run: |
           gcloud run --project ${{ inputs.gcp_project }} services list --platform managed --format 'table(metadata.name, status.url)'
           
