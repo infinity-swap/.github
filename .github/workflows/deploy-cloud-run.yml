@@ -6,7 +6,7 @@ on:
       gcp_project:
         type: string
         required: true
-      gcp_image_uri:
+      image:
         type: string
         required: true
       service:
@@ -43,7 +43,7 @@ jobs:
           timeout: ${{ inputs.timeout }}
           region: ${{ inputs.region }}
           suffix: run-${{ github.run_number }}
-          image: ${{ inputs.gcp_image_uri }}:latest
+          image: ${{ inputs.image }}
 
       - name: "Services URLs"
         run: |
