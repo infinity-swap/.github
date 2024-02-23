@@ -140,7 +140,7 @@ jobs:
         run: |
           env
 
-      - name: "Artifact initialization"
+      - name: "Artifact initialization (cleans .artifact dir before executes)"
         if: ${{ inputs.output-artifact }}
         run: |
           rm -rf .artifact
