@@ -105,7 +105,7 @@ jobs:
           echo "test=$TT" >> $GITHUB_OUTPUT
 
       - name: Configure Rust Cache
-      - uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@v2
         if: ${{ ! inputs.disable-cache }}
         with:
           shared-key: ${{ github.repository }}
