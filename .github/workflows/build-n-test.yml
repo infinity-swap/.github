@@ -6,10 +6,6 @@ on:
         type: string
         default: 'ubuntu-latest'
         required: false
-      # Docker image to use for the test environment
-      container-image:
-        type: string
-        required: true
       # Init script that should be executed right after checkout.
       init-script:
         type: string
@@ -53,20 +49,6 @@ on:
       git-fetch-depth:
         type: string
         required: false
-      cargo-clippy-extra-args:
-        type: string
-        required: false
-        default: ''
-    secrets:
-      gh_token:
-        required: true
-      gh_login:
-        required: true
-      env_secret1:
-        required: false
-      env_secret2:
-        required: false
-
 
 env:
   CARGO_TERM_COLOR: always
@@ -74,22 +56,38 @@ env:
 jobs:
   assemble-and-test:
     runs-on: ${{ inputs.runs-on }}
-    container:
-      image: ${{ inputs.container-image }}
-      env:
-        SECRET1: ${{ secrets.env_secret1 }}
-        SECRET2: ${{ secrets.env_secret2 }}
-      credentials:
-        username: ${{ secrets.gh_login }}
-        password: ${{ secrets.gh_token }}
 
     steps:
       - name: Checkout repository and submodules
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
-          token: ${{ secrets.gh_token }}
           fetch-depth: ${{ inputs.git-fetch-depth }}
+
+      - name: Install rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+          targets: wasm32-unknown-unknown, i686-unknown-linux-gnu
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          cache: false
+
+      - name: Install dfx
+        uses: dfinity/setup-dfx@main
+
+      - name: setup environment
+        run: |
+          export RUST_BACKTRACE="full"
+          cargo install ic-wasm
+          cargo install icx-proxy
+          sudo apt update
+          sudo apt install gcc-multilib libunwind-dev
+
+      - name: Install Protobuf compiler
+        uses: arduino/setup-protoc@v3
 
       - name: Reconfigure git save.directory
         run: |
@@ -106,7 +104,8 @@ jobs:
           if [ "$GITHUB_REF_TYPE" = "tag" ] && [ "${GITHUB_REF_NAME%-test}" != "$GITHUB_REF_NAME" ]; then TT="true"; fi
           echo "test=$TT" >> $GITHUB_OUTPUT
 
-      - uses: Swatinem/rust-cache@v2
+      - name: Configure Rust Cache
+        uses: Swatinem/rust-cache@v2
         if: ${{ ! inputs.disable-cache }}
         with:
           shared-key: ${{ github.repository }}
@@ -134,7 +133,7 @@ jobs:
 
       - name: "Checking code style"
         if: ${{ ! inputs.rs-skip-clippy && ! steps.tag.outputs.test}} 
-        run: cargo clippy --all-features --all-targets ${{ inputs.cargo-clippy-extra-args }}
+        run: cargo clippy --all-features --all-targets -- -D warnings
 
       - name: "Current environment"
         run: |
