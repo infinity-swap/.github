@@ -10,40 +10,14 @@ on:
       init-script:
         type: string
         required: false
-      # Tests script to launch integration (whatever) tests with DFX environment
-      # If skipped tests would not be launched
-      test-script:
-        type: string
-        required: false
-      # Force skipping test-script if it is provided
-      # Use this for advanced configuration
-      skip-test:
-        type: boolean
-        required: false
       # Do not fail on audit warnings only of critical errors
       audit-allow-warnings:
         type: boolean
-        required: false
-      # Name of the github artfact to upload for reusing in next jobs
-      # If not defined -> would skip artifact uploading
-      output-artifact:
-        type: string
-        required: false
-      # Script that builds artifact files and put them into .artifact directory
-      artifact-script:
-        type: string
-        required: false
-      # Additional artifact logic to run before tests
-      artifact-pre-script:
-        type: string
         required: false
       enable-target-cache:
         type: boolean
         required: false
       disable-cache:
-        type: boolean
-        required: false
-      rs-skip-clippy:
         type: boolean
         required: false
       git-fetch-depth:
@@ -54,7 +28,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  assemble-and-test:
+  assemble-rs:
     runs-on: ${{ inputs.runs-on }}
 
     steps:
@@ -134,38 +108,3 @@ jobs:
       - name: "Checking code style"
         if: ${{ ! inputs.rs-skip-clippy && ! steps.tag.outputs.test}} 
         run: cargo clippy --all-features --all-targets -- -D warnings
-
-      - name: "Current environment"
-        run: |
-          env
-
-      - name: "Artifact initialization (cleans .artifact dir before executes)"
-        if: ${{ inputs.output-artifact }}
-        run: |
-          rm -rf .artifact
-          mkdir  .artifact
-          ${{ inputs.artifact-pre-script }}
-
-      - name: "Running test script"
-        if: ${{ inputs.test-script && ! inputs.skip-test && ! steps.tag.outputs.test }}
-        run: ${{ inputs.test-script }}
-
-      - name: "Preparing artifact files"
-        if: ${{ inputs.output-artifact }}
-        run: |
-          ${{ inputs.artifact-script }}
-
-          echo "Artifact content:"
-          ls -laR .artifact
-
-      - name: "Uploading artifact: ${{ inputs.output-artifact }}"
-        if: ${{ inputs.output-artifact }}
-        uses: actions/upload-artifact@v3
-        with:
-          if-no-files-found: error
-          retention-days: 1
-          name: ${{ inputs.output-artifact }}
-          path: .artifact/*
-      
-      - name: "Removing wasm modules from target if any"
-        run: rm -f target/wasm32-unknown-unknown/release/*.wasm
